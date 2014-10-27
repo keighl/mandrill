@@ -21,7 +21,7 @@ func refute(t *testing.T, a interface{}, b interface{}) {
   }
 }
 
-func MessagesTestTools(code int, body string) (*httptest.Server, *Client)  {
+func testTools(code int, body string) (*httptest.Server, *Client)  {
 
   server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(code)
@@ -36,16 +36,14 @@ func MessagesTestTools(code int, body string) (*httptest.Server, *Client)  {
   }
   httpClient := &http.Client{Transport: tr}
 
-  client := ClientWithKey("APIKEY")
-  client.HTTPClient = httpClient
-  client.BaseURL = "http://example.com/api/1.0/"
+  client := &Client{"APIKEY", server.URL, httpClient}
   return server, client
 }
 
 // MessagesSendTemplate //////////
 
 func Test_MessagesSendTemplate_Success(t *testing.T) {
-  server, m := MessagesTestTools(200, `[{"email":"bob@example.com","status":"sent","reject_reason":"hard-bounce","_id":"1"}]`)
+  server, m := testTools(200, `[{"email":"bob@example.com","status":"sent","reject_reason":"hard-bounce","_id":"1"}]`)
   defer server.Close()
   responses, apiError, _ := m.MessagesSendTemplate(&Message{}, "cheese", map[string]string{"name": "bob"})
 
@@ -62,7 +60,7 @@ func Test_MessagesSendTemplate_Success(t *testing.T) {
 }
 
 func Test_MessagesSendTemplate_Fail(t *testing.T) {
-  server, m := MessagesTestTools(400, `{"status":"error","code":12,"name":"Unknown_Subaccount","message":"No subaccount exists with the id 'customer-123'"}`)
+  server, m := testTools(400, `{"status":"error","code":12,"name":"Unknown_Subaccount","message":"No subaccount exists with the id 'customer-123'"}`)
   defer server.Close()
   responses, apiError, _ := m.MessagesSendTemplate(&Message{}, "cheese", map[string]string{"name": "bob"})
 
@@ -80,7 +78,7 @@ func Test_MessagesSendTemplate_Fail(t *testing.T) {
 // MessagesSend //////////
 
 func Test_MessageSend_Success(t *testing.T) {
-  server, m := MessagesTestTools(200, `[{"email":"bob@example.com","status":"sent","reject_reason":"hard-bounce","_id":"1"}]`)
+  server, m := testTools(200, `[{"email":"bob@example.com","status":"sent","reject_reason":"hard-bounce","_id":"1"}]`)
   defer server.Close()
   responses, apiError, _ := m.MessagesSend(&Message{})
 
@@ -97,7 +95,7 @@ func Test_MessageSend_Success(t *testing.T) {
 }
 
 func Test_MessageSend_Fail(t *testing.T) {
-  server, m := MessagesTestTools(400, `{"status":"error","code":12,"name":"Unknown_Subaccount","message":"No subaccount exists with the id 'customer-123'"}`)
+  server, m := testTools(400, `{"status":"error","code":12,"name":"Unknown_Subaccount","message":"No subaccount exists with the id 'customer-123'"}`)
   defer server.Close()
   responses, apiError, _ := m.MessagesSend(&Message{})
 
