@@ -26,7 +26,7 @@ https://mandrillapp.com/api/docs/messages.JSON.html#method=send
     message.HTML = "<h1>You won!!</h1>"
     message.Text = "You won!!"
 
-    responses, mandrillError, err := client.MessagesSend(message)
+    responses, apiError, err := client.MessagesSend(message)
 
 ### Send Template
 
@@ -35,7 +35,7 @@ https://mandrillapp.com/api/docs/messages.JSON.html#method=send-template
 http://help.mandrill.com/entries/21694286-How-do-I-add-dynamic-content-using-editable-regions-in-my-template-
 
     templateContent := map[string]string{"header": "Bob! You won the prize!"}
-    responses, mandrillError, err := client.MessagesSendTemplate(message, "you-won", templateContent)
+    responses, apiError, err := client.MessagesSendTemplate(message, "you-won", templateContent)
 
 ### Including Merge Tags
 

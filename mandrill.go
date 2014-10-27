@@ -14,7 +14,7 @@
 //     message.HTML = "<h1>You won!!</h1>"
 //     message.Text = "You won!!"
 //
-//     responses, mandrillError, err := client.MessagesSend(message)
+//     responses, apiError, err := client.MessagesSend(message)
 //
 // Send Template
 //
@@ -23,7 +23,7 @@
 // http://help.mandrill.com/entries/21694286-How-do-I-add-dynamic-content-using-editable-regions-in-my-template-
 //
 //     templateContent := map[string]string{"header": "Bob! You won the prize!"}
-//     responses, mandrillError, err := client.MessagesSendTemplate(message, "you-won", templateContent)
+//     responses, apiError, err := client.MessagesSendTemplate(message, "you-won", templateContent)
 //
 // Including Merge Tags
 //
@@ -169,7 +169,7 @@ type Attachment struct {
 }
 
 // details of the message status
-type MResponse struct {
+type Response struct {
   // the email address of the recipient
   Email string `json:"email"`
   // the sending status of the recipient - either "sent", "queued", "scheduled", "rejected", or "invalid"
@@ -185,7 +185,7 @@ type MResponse struct {
 // * Unknown_Subaccount - The provided subaccount id does not exist.\r
 // * ValidationError - The parameters passed to the API call are invalid or not provided when required\r
 // * GeneralError - An unexpected error occurred processing the request. Mandrill developers will be   notified.\r
-type MError struct {
+type Error struct {
   Status string `json:"status"`
   Code int `json:"code"`
   Name string `json:"name"`
@@ -202,7 +202,7 @@ func ClientWithKey(key string) *Client {
 }
 
 // Send a message via an API client
-func (m *Client) MessagesSend(message *Message) (mResponses []*MResponse, mandrillError *MError, err error) {
+func (m *Client) MessagesSend(message *Message) (responses []*Response, apiError *Error, err error) {
 
   var data struct {
     Key string `json:"key"`
@@ -216,7 +216,7 @@ func (m *Client) MessagesSend(message *Message) (mResponses []*MResponse, mandri
 }
 
 // Send a message with a Mandrill via an API client
-func (m *Client) MessagesSendTemplate(message *Message, templateName string, contents map[string]string) (mResponses []*MResponse, mandrillError *MError, err error) {
+func (m *Client) MessagesSendTemplate(message *Message, templateName string, contents map[string]string) (responses []*Response, apiError *Error, err error) {
 
   var data struct {
     Key string `json:"key"`
@@ -233,26 +233,26 @@ func (m *Client) MessagesSendTemplate(message *Message, templateName string, con
   return m.sendMessagePayload(data, "messages/send-template.json")
 }
 
-func (m *Client) sendMessagePayload(data interface{}, path string) (mResponses []*MResponse, mandrillError *MError, err error) {
+func (m *Client) sendMessagePayload(data interface{}, path string) (responses []*Response, apiError *Error, err error) {
   payload, err := json.Marshal(data)
-  if (err != nil) { return mResponses, mandrillError, err }
+  if (err != nil) { return responses, apiError, err }
 
   resp, err := m.HTTPClient.Post(m.BaseURL+path, "application/json", bytes.NewReader(payload))
-  if (err != nil) { return mResponses, mandrillError, err }
+  if (err != nil) { return responses, apiError, err }
 
   defer resp.Body.Close()
   body, err := ioutil.ReadAll(resp.Body)
-  if (err != nil) { return mResponses, mandrillError, err }
+  if (err != nil) { return responses, apiError, err }
 
   if (resp.StatusCode >= 400) {
-    mandrillError = &MError{}
-    err = json.Unmarshal(body, mandrillError)
-    return mResponses, mandrillError, errors.New(fmt.Sprintf("Status code: %i", resp.StatusCode))
+    apiError = &Error{}
+    err = json.Unmarshal(body, apiError)
+    return responses, apiError, errors.New(fmt.Sprintf("Status code: %i", resp.StatusCode))
   }
 
-  mResponses = make([]*MResponse, 0)
-  err = json.Unmarshal(body, &mResponses)
-  return mResponses, mandrillError, err
+  responses = make([]*Response, 0)
+  err = json.Unmarshal(body, &responses)
+  return responses, apiError, err
 }
 
 // Append a recipient to the message

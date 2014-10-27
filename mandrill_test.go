@@ -47,34 +47,34 @@ func MessagesTestTools(code int, body string) (*httptest.Server, *Client)  {
 func Test_MessagesSendTemplate_Success(t *testing.T) {
   server, m := MessagesTestTools(200, `[{"email":"bob@example.com","status":"sent","reject_reason":"hard-bounce","_id":"1"}]`)
   defer server.Close()
-  mandrillResponses, mandrillError, _ := m.MessagesSendTemplate(&Message{}, "cheese", map[string]string{"name": "bob"})
+  responses, apiError, _ := m.MessagesSendTemplate(&Message{}, "cheese", map[string]string{"name": "bob"})
 
-  expect(t, len(mandrillResponses), 1)
-  expect(t, mandrillError, (*MError)(nil))
+  expect(t, len(responses), 1)
+  expect(t, apiError, (*Error)(nil))
 
-  correctResponse := &MResponse{
+  correctResponse := &Response{
     Email: "bob@example.com",
     Status: "sent",
     RejectionReason: "hard-bounce",
     Id: "1",
   }
-  expect(t, reflect.DeepEqual(correctResponse, mandrillResponses[0]), true)
+  expect(t, reflect.DeepEqual(correctResponse, responses[0]), true)
 }
 
 func Test_MessagesSendTemplate_Fail(t *testing.T) {
   server, m := MessagesTestTools(400, `{"status":"error","code":12,"name":"Unknown_Subaccount","message":"No subaccount exists with the id 'customer-123'"}`)
   defer server.Close()
-  mandrillResponses, mandrillError, _ := m.MessagesSendTemplate(&Message{}, "cheese", map[string]string{"name": "bob"})
+  responses, apiError, _ := m.MessagesSendTemplate(&Message{}, "cheese", map[string]string{"name": "bob"})
 
-  expect(t, len(mandrillResponses), 0)
+  expect(t, len(responses), 0)
 
-  correctResponse := &MError{
+  correctResponse := &Error{
     Status: "error",
     Code: 12,
     Name: "Unknown_Subaccount",
     Message: "No subaccount exists with the id 'customer-123'",
   }
-  expect(t, reflect.DeepEqual(correctResponse, mandrillError), true)
+  expect(t, reflect.DeepEqual(correctResponse, apiError), true)
 }
 
 // MessagesSend //////////
@@ -82,34 +82,34 @@ func Test_MessagesSendTemplate_Fail(t *testing.T) {
 func Test_MessageSend_Success(t *testing.T) {
   server, m := MessagesTestTools(200, `[{"email":"bob@example.com","status":"sent","reject_reason":"hard-bounce","_id":"1"}]`)
   defer server.Close()
-  mandrillResponses, mandrillError, _ := m.MessagesSend(&Message{})
+  responses, apiError, _ := m.MessagesSend(&Message{})
 
-  expect(t, len(mandrillResponses), 1)
-  expect(t, mandrillError, (*MError)(nil))
+  expect(t, len(responses), 1)
+  expect(t, apiError, (*Error)(nil))
 
-  correctResponse := &MResponse{
+  correctResponse := &Response{
     Email: "bob@example.com",
     Status: "sent",
     RejectionReason: "hard-bounce",
     Id: "1",
   }
-  expect(t, reflect.DeepEqual(correctResponse, mandrillResponses[0]), true)
+  expect(t, reflect.DeepEqual(correctResponse, responses[0]), true)
 }
 
 func Test_MessageSend_Fail(t *testing.T) {
   server, m := MessagesTestTools(400, `{"status":"error","code":12,"name":"Unknown_Subaccount","message":"No subaccount exists with the id 'customer-123'"}`)
   defer server.Close()
-  mandrillResponses, mandrillError, _ := m.MessagesSend(&Message{})
+  responses, apiError, _ := m.MessagesSend(&Message{})
 
-  expect(t, len(mandrillResponses), 0)
+  expect(t, len(responses), 0)
 
-  correctResponse := &MError{
+  correctResponse := &Error{
     Status: "error",
     Code: 12,
     Name: "Unknown_Subaccount",
     Message: "No subaccount exists with the id 'customer-123'",
   }
-  expect(t, reflect.DeepEqual(correctResponse, mandrillError), true)
+  expect(t, reflect.DeepEqual(correctResponse, apiError), true)
 }
 
 // AddRecipient //////////
