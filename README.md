@@ -28,8 +28,6 @@ https://mandrillapp.com/api/docs/messages.JSON.html#method=send
 
 ### Send Template
 
-You can also register a template
-
 https://mandrillapp.com/api/docs/messages.JSON.html#method=send-template
 
 http://help.mandrill.com/entries/21694286-How-do-I-add-dynamic-content-using-editable-regions-in-my-template-
