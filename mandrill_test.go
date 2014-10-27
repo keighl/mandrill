@@ -124,19 +124,16 @@ func Test_AddRecipient(t *testing.T) {
 // ConvertMapToVariables /////
 
 func Test_ConvertMapToVariables(t *testing.T) {
-  m := map[string]string{"name": "bob", "food": "cheese"}
+  m := map[string]string{"name": "bob"}
   target := ConvertMapToVariables(m)
-  hand := []*Variable{
-    &Variable{"name", "bob"},
-    &Variable{"food", "cheese"},
-  }
+  hand := []*Variable{&Variable{"name", "bob"}}
   expect(t, reflect.DeepEqual(target, hand), true)
 }
 
 // ConvertMapToVariablesForRecipient ////
 
 func Test_ConvertMapToVariablesForRecipient(t *testing.T) {
-  m := map[string]string{"name": "bob", "food": "cheese"}
+  m := map[string]string{"name": "bob"}
   target := ConvertMapToVariablesForRecipient("bob@example.com", m)
   hand := &RcptMergeVars{"bob@example.com", ConvertMapToVariables(m)}
   expect(t, reflect.DeepEqual(target, hand), true)
