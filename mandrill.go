@@ -119,11 +119,11 @@ type Message struct {
   // an array of embedded images to add to the message
   Images []*Attachment `json:"images,omitempty"`
   // enable a background sending mode that is optimized for bulk sending. In async mode, messages/send will immediately return a status of "queued" for every recipient. To handle rejections when sending in async mode, set up a webhook for the 'reject' event. Defaults to false for messages with no more than 10 recipients; messages with more than 10 recipients are always sent asynchronously, regardless of the value of async.
-  Async bool `json:"async,omitempty"`
+  Async bool `json:"-"`
   // the name of the dedicated ip pool that should be used to send the message. If you do not have any dedicated IPs, this parameter has no effect. If you specify a pool that does not exist, your default pool will be used instead.
-  IPPool string `json:"ip_pool,omitempty"`
+  IPPool string `json:"-"`
   // when this message should be sent as a UTC timestamp in YYYY-MM-DD HH:MM:SS format. If you specify a time in the past, the message will be sent immediately. An additional fee applies for scheduled email, and this feature is only available to accounts with a positive balance.
-  SendAt string `json:"send_at,omitempty"`
+  SendAt string `json:"-"`
 }
 
 // a single recipient's information.
@@ -207,10 +207,19 @@ func (m *Client) MessagesSend(message *Message) (responses []*Response, apiError
   var data struct {
     Key string `json:"key"`
     Message *Message `json:"message,omitempty"`
+    // Remapped from Message.Async
+    Async bool `json:"async,omitempty"`
+    // Remapped from Message.IPPool
+    IPPool string `json:"ip_pool,omitempty"`
+    // Remapped from Message.SendAt
+    SendAt string `json:"send_at,omitempty"`
   }
 
-  data.Key = m.Key
+  data.Key     = m.Key
   data.Message = message
+  data.Async   = message.Async
+  data.IPPool  = message.IPPool
+  data.SendAt  = message.SendAt
 
   return m.sendMessagePayload(data, "messages/send.json")
 }
@@ -223,12 +232,21 @@ func (m *Client) MessagesSendTemplate(message *Message, templateName string, con
     TemplateName string `json:"template_name,omitempty"`
     TemplateContent []*Variable `json:"template_content,omitempty"`
     Message *Message `json:"message,omitempty"`
+    // Remapped from Message.Async
+    Async bool `json:"async,omitempty"`
+    // Remapped from Message.IPPool
+    IPPool string `json:"ip_pool,omitempty"`
+    // Remapped from Message.SendAt
+    SendAt string `json:"send_at,omitempty"`
   }
 
-  data.Key = m.Key
-  data.TemplateName = templateName
+  data.Key             = m.Key
+  data.TemplateName    = templateName
   data.TemplateContent = ConvertMapToVariables(contents)
-  data.Message = message
+  data.Message         = message
+  data.Async           = message.Async
+  data.IPPool          = message.IPPool
+  data.SendAt          = message.SendAt
 
   return m.sendMessagePayload(data, "messages/send-template.json")
 }
