@@ -134,7 +134,7 @@ type To struct {
   Name  string `json:"name,omitempty"`
   // the header type to use for the recipient, defaults to "to" if not provided
   // oneof(to, cc, bcc)
-  Type string `json:type,omitempty"`
+  Type string `json:"type,omitempty"`
 }
 
 type Variable struct {
