@@ -16,9 +16,13 @@ http://godoc.org/github.com/keighl/mandrill
 
 https://mandrillapp.com/api/docs/messages.JSON.html#method=send
 
-    client := ClientWithKey("y2cQvBBfdFoZNByVaKsJsA")
+    import (
+      m "github.com/keighl/mandrill"
+    )
 
-    message := &Message{}
+    client := m.ClientWithKey("y2cQvBBfdFoZNByVaKsJsA")
+
+    message := &m.Message{}
     message.AddRecipient("bob@example.com", "Bob Johnson", "to")
     message.FromEmail = "kyle@example.com"
     message.FromName = "Kyle Truscott"
@@ -41,5 +45,5 @@ http://help.mandrill.com/entries/21694286-How-do-I-add-dynamic-content-using-edi
 
 http://help.mandrill.com/entries/21678522-How-do-I-use-merge-tags-to-add-dynamic-content-
 
-    message.GlobalMergeVars := mandrill.ConvertMapToVariables(map[string]string{"name": "Bob"})
-    message.MergeVars := mandrill.ConvertMapToVariablesForRecipient("bob@example.com", map[string]string{"name": "Bob"})
+    message.GlobalMergeVars := m.ConvertMapToVariables(map[string]string{"name": "Bob"})
+    message.MergeVars := m.ConvertMapToVariablesForRecipient("bob@example.com", map[string]string{"name": "Bob"})
