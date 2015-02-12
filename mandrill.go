@@ -230,7 +230,7 @@ func (m *Client) MessagesSendTemplate(message *Message, templateName string, con
   var data struct {
     Key string `json:"key"`
     TemplateName string `json:"template_name,omitempty"`
-    TemplateContent []*Variable `json:"template_content,omitempty"`
+    TemplateContent []*Variable `json:"template_content"`
     Message *Message `json:"message,omitempty"`
     // Remapped from Message.Async
     Async bool `json:"async,omitempty"`
