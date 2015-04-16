@@ -165,7 +165,7 @@ type Attachment struct {
   // the file name of the attachment
   Name string `json:"name"`
   // the content of the attachment as a base64-encoded string
-  Content string `json:"name"`
+  Content string `json:"content"`
 }
 
 // details of the message status
