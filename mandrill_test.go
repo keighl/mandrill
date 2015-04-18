@@ -40,6 +40,13 @@ func testTools(code int, body string) (*httptest.Server, *Client)  {
   return server, client
 }
 
+// ClientWithKey //////
+
+func Test_ClientWithKey(t *testing.T) {
+  c := ClientWithKey("CHEEEEEESE")
+  refute(t, c, nil)
+}
+
 // MessagesSendTemplate //////////
 
 func Test_MessagesSendTemplate_Success(t *testing.T) {
@@ -128,11 +135,25 @@ func Test_ConvertMapToVariables(t *testing.T) {
   expect(t, reflect.DeepEqual(target, hand), true)
 }
 
+func Test_MapToVars(t *testing.T) {
+  m := map[string]string{"name": "bob"}
+  target := MapToVars(m)
+  hand := []*Variable{&Variable{"name", "bob"}}
+  expect(t, reflect.DeepEqual(target, hand), true)
+}
+
 // ConvertMapToVariablesForRecipient ////
 
 func Test_ConvertMapToVariablesForRecipient(t *testing.T) {
   m := map[string]string{"name": "bob"}
   target := ConvertMapToVariablesForRecipient("bob@example.com", m)
+  hand := &RcptMergeVars{"bob@example.com", ConvertMapToVariables(m)}
+  expect(t, reflect.DeepEqual(target, hand), true)
+}
+
+func Test_MapToRecipientVars(t *testing.T) {
+  m := map[string]string{"name": "bob"}
+  target := MapToRecipientVars("bob@example.com", m)
   hand := &RcptMergeVars{"bob@example.com", ConvertMapToVariables(m)}
   expect(t, reflect.DeepEqual(target, hand), true)
 }

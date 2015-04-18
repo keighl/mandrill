@@ -280,7 +280,7 @@ func (m *Message) AddRecipient(email string, name string, sendType string) {
   m.To = append(m.To, to)
 }
 
-// Convert a regular string/string map into the {name: "x", content: "y"} struct
+// Convert a regular string/string map into the Variable struct
 func ConvertMapToVariables(m map[string]string) []*Variable {
   variables := make([]*Variable, 0, len(m))
   for k, v := range m {
@@ -289,9 +289,20 @@ func ConvertMapToVariables(m map[string]string) []*Variable {
   return variables
 }
 
+// Convert a regular string/string map into the Variable struct
+// Alias of `ConvertMapToVariables`
+func MapToVars(m map[string]string) []*Variable {
+  return ConvertMapToVariables(m)
+}
+
 // Convert a regular string/string map into the RcptMergeVars struct
 func ConvertMapToVariablesForRecipient(email string, m map[string]string) *RcptMergeVars {
   return &RcptMergeVars{Rcpt: email, Vars: ConvertMapToVariables(m)}
 }
 
+// Convert a regular string/string map into the RcptMergeVars struct
+// Alias of `ConvertMapToVariablesForRecipient`
+func MapToRecipientVars(email string, m map[string]string) *RcptMergeVars {
+  return ConvertMapToVariablesForRecipient(email, m)
+}
 

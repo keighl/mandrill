@@ -45,5 +45,10 @@ http://help.mandrill.com/entries/21694286-How-do-I-add-dynamic-content-using-edi
 
 http://help.mandrill.com/entries/21678522-How-do-I-use-merge-tags-to-add-dynamic-content-
 
-    message.GlobalMergeVars := m.ConvertMapToVariables(map[string]string{"name": "Bob"})
-    message.MergeVars := m.ConvertMapToVariablesForRecipient("bob@example.com", map[string]string{"name": "Bob"})
+    // Global vars
+    message.GlobalMergeVars = m.MapToVars(map[string]string{"name": "Bob"})
+
+    // Recipient vars
+    bobVars := m.MapToRecipientVars("bob@example.com", map[string]string{"name": "Bob"})
+    jillVars := m.MapToRecipientVars("jill@example.com", map[string]string{"name": "Jill"})
+    message.MergeVars = []*m.RcptMergeVars{bobVars, jillVars}
