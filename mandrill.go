@@ -14,7 +14,7 @@
 //     message.HTML = "<h1>You won!!</h1>"
 //     message.Text = "You won!!"
 //
-//     responses, apiError, err := client.MessagesSend(message)
+//     responses, err := client.MessagesSend(message)
 //
 // Send Template
 //
@@ -23,7 +23,7 @@
 // http://help.mandrill.com/entries/21694286-How-do-I-add-dynamic-content-using-editable-regions-in-my-template-
 //
 //     templateContent := map[string]string{"header": "Bob! You won the prize!"}
-//     responses, apiError, err := client.MessagesSendTemplate(message, "you-won", templateContent)
+//     responses, err := client.MessagesSendTemplate(message, "you-won", templateContent)
 //
 // Including Merge Tags
 //
@@ -31,10 +31,19 @@
 //
 //     message.GlobalMergeVars := mandrill.ConvertMapToVariables(map[string]string{"name": "Bob"})
 //     message.MergeVars := mandrill.ConvertMapToVariablesForRecipient("bob@example.com", map[string]string{"name": "Bob"})
+//
+// Integration Testing Keys
+
+// You can pass special API keys to the client to mock success/err responses from `MessagesSend` or `MessagesSendTemplate`.
+
+//     // Sending messages will be successful, but without a real API request
+//     c := ClientWithKey("SANDBOX_SUCCESS")
+
+//     // Sending messages will error, but without a real API request
+//     c := ClientWithKey("SANDBOX_SUCCESS")
 package mandrill
 
 import (
-  "fmt"
   "net/http"
   "encoding/json"
   "bytes"
@@ -192,7 +201,12 @@ type Error struct {
   Message string `json:"message"`
 }
 
+func (err Error) Error() string {
+  return err.Message
+}
+
 // Returns a mandrill.Client pointer armed with the supplied Mandrill API key
+// For integration testing, you can supply `SANDBOX_SUCCESS` or `SANDBOX_ERROR` as the API key.
 func ClientWithKey(key string) *Client {
   return &Client{
     Key: key,
@@ -202,7 +216,7 @@ func ClientWithKey(key string) *Client {
 }
 
 // Send a message via an API client
-func (m *Client) MessagesSend(message *Message) (responses []*Response, apiError *Error, err error) {
+func (c *Client) MessagesSend(message *Message) (responses []*Response, err error) {
 
   var data struct {
     Key string `json:"key"`
@@ -215,17 +229,17 @@ func (m *Client) MessagesSend(message *Message) (responses []*Response, apiError
     SendAt string `json:"send_at,omitempty"`
   }
 
-  data.Key     = m.Key
+  data.Key     = c.Key
   data.Message = message
   data.Async   = message.Async
   data.IPPool  = message.IPPool
   data.SendAt  = message.SendAt
 
-  return m.sendMessagePayload(data, "messages/send.json")
+  return c.sendMessagePayload(data, "messages/send.json")
 }
 
 // Send a message with a Mandrill via an API client
-func (m *Client) MessagesSendTemplate(message *Message, templateName string, contents map[string]string) (responses []*Response, apiError *Error, err error) {
+func (c *Client) MessagesSendTemplate(message *Message, templateName string, contents map[string]string) (responses []*Response, err error) {
 
   var data struct {
     Key string `json:"key"`
@@ -240,7 +254,7 @@ func (m *Client) MessagesSendTemplate(message *Message, templateName string, con
     SendAt string `json:"send_at,omitempty"`
   }
 
-  data.Key             = m.Key
+  data.Key             = c.Key
   data.TemplateName    = templateName
   data.TemplateContent = ConvertMapToVariables(contents)
   data.Message         = message
@@ -248,29 +262,37 @@ func (m *Client) MessagesSendTemplate(message *Message, templateName string, con
   data.IPPool          = message.IPPool
   data.SendAt          = message.SendAt
 
-  return m.sendMessagePayload(data, "messages/send-template.json")
+  return c.sendMessagePayload(data, "messages/send-template.json")
 }
 
-func (m *Client) sendMessagePayload(data interface{}, path string) (responses []*Response, apiError *Error, err error) {
-  payload, err := json.Marshal(data)
-  if (err != nil) { return responses, apiError, err }
+func (c *Client) sendMessagePayload(data interface{}, path string) (responses []*Response, err error) {
 
-  resp, err := m.HTTPClient.Post(m.BaseURL+path, "application/json", bytes.NewReader(payload))
-  if (err != nil) { return responses, apiError, err }
+  if (c.Key == "SANDBOX_SUCCESS") {
+    return []*Response{}, nil
+  }
+
+  if (c.Key == "SANDBOX_ERROR") {
+    return nil, errors.New("SANDBOX_SUCCESS")
+  }
+
+  payload, _ := json.Marshal(data)
+
+  resp, err := c.HTTPClient.Post(c.BaseURL+path, "application/json", bytes.NewReader(payload))
+  if (err != nil) { return responses, err }
 
   defer resp.Body.Close()
   body, err := ioutil.ReadAll(resp.Body)
-  if (err != nil) { return responses, apiError, err }
+  if (err != nil) { return responses, err }
 
   if (resp.StatusCode >= 400) {
-    apiError = &Error{}
-    err = json.Unmarshal(body, apiError)
-    return responses, apiError, errors.New(fmt.Sprintf("Status code: %i", resp.StatusCode))
+    resError := &Error{}
+    err = json.Unmarshal(body, resError)
+    return responses, resError
   }
 
   responses = make([]*Response, 0)
   err = json.Unmarshal(body, &responses)
-  return responses, apiError, err
+  return responses, err
 }
 
 // Append a recipient to the message

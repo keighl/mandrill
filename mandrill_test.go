@@ -52,10 +52,10 @@ func Test_ClientWithKey(t *testing.T) {
 func Test_MessagesSendTemplate_Success(t *testing.T) {
   server, m := testTools(200, `[{"email":"bob@example.com","status":"sent","reject_reason":"hard-bounce","_id":"1"}]`)
   defer server.Close()
-  responses, apiError, _ := m.MessagesSendTemplate(&Message{}, "cheese", map[string]string{"name": "bob"})
+  responses, err := m.MessagesSendTemplate(&Message{}, "cheese", map[string]string{"name": "bob"})
 
   expect(t, len(responses), 1)
-  expect(t, apiError, (*Error)(nil))
+  expect(t, err, nil)
 
   correctResponse := &Response{
     Email: "bob@example.com",
@@ -69,7 +69,7 @@ func Test_MessagesSendTemplate_Success(t *testing.T) {
 func Test_MessagesSendTemplate_Fail(t *testing.T) {
   server, m := testTools(400, `{"status":"error","code":12,"name":"Unknown_Subaccount","message":"No subaccount exists with the id 'customer-123'"}`)
   defer server.Close()
-  responses, apiError, _ := m.MessagesSendTemplate(&Message{}, "cheese", map[string]string{"name": "bob"})
+  responses, err := m.MessagesSendTemplate(&Message{}, "cheese", map[string]string{"name": "bob"})
 
   expect(t, len(responses), 0)
 
@@ -79,7 +79,7 @@ func Test_MessagesSendTemplate_Fail(t *testing.T) {
     Name: "Unknown_Subaccount",
     Message: "No subaccount exists with the id 'customer-123'",
   }
-  expect(t, reflect.DeepEqual(correctResponse, apiError), true)
+  expect(t, reflect.DeepEqual(correctResponse, err), true)
 }
 
 // MessagesSend //////////
@@ -87,10 +87,10 @@ func Test_MessagesSendTemplate_Fail(t *testing.T) {
 func Test_MessageSend_Success(t *testing.T) {
   server, m := testTools(200, `[{"email":"bob@example.com","status":"sent","reject_reason":"hard-bounce","_id":"1"}]`)
   defer server.Close()
-  responses, apiError, _ := m.MessagesSend(&Message{})
+  responses, err := m.MessagesSend(&Message{})
 
   expect(t, len(responses), 1)
-  expect(t, apiError, (*Error)(nil))
+  expect(t, err, nil)
 
   correctResponse := &Response{
     Email: "bob@example.com",
@@ -104,7 +104,7 @@ func Test_MessageSend_Success(t *testing.T) {
 func Test_MessageSend_Fail(t *testing.T) {
   server, m := testTools(400, `{"status":"error","code":12,"name":"Unknown_Subaccount","message":"No subaccount exists with the id 'customer-123'"}`)
   defer server.Close()
-  responses, apiError, _ := m.MessagesSend(&Message{})
+  responses, err := m.MessagesSend(&Message{})
 
   expect(t, len(responses), 0)
 
@@ -114,7 +114,21 @@ func Test_MessageSend_Fail(t *testing.T) {
     Name: "Unknown_Subaccount",
     Message: "No subaccount exists with the id 'customer-123'",
   }
-  expect(t, reflect.DeepEqual(correctResponse, apiError), true)
+  expect(t, reflect.DeepEqual(correctResponse, err), true)
+}
+
+// TEST Keys //////////
+
+func Test_SANDBOX_SUCCESS(t *testing.T) {
+  client := ClientWithKey("SANDBOX_SUCCESS")
+  _, err := client.MessagesSend(&Message{})
+  expect(t, err, nil)
+}
+
+func Test_SANDBOX_ERROR(t *testing.T) {
+  client := ClientWithKey("SANDBOX_ERROR")
+  _, err := client.MessagesSend(&Message{})
+  refute(t, err, nil)
 }
 
 // AddRecipient //////////
@@ -158,3 +172,9 @@ func Test_MapToRecipientVars(t *testing.T) {
   expect(t, reflect.DeepEqual(target, hand), true)
 }
 
+// Error Interface ////
+
+func Test_ErrorError(t *testing.T) {
+  e := Error{Message: "CHEEEEEESE"}
+  expect(t, e.Error(), "CHEEEEEESE")
+}
