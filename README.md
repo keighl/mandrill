@@ -8,6 +8,18 @@ Stripped down package for sending emails through the Mandrill API. Inspired by [
 
     go get -u github.com/keighl/mandrill
 
+### Upgrading to 1.0
+
+`MessagesSend()` and `MessagesSendTemplate()` now only returns 1 error interface (as opposed to a non-sensical 2).
+
+```go
+// New!
+res, err := client.MessagesSend(m)
+
+// Old!
+res, apiError, err := client.MessagesSend(m)
+```
+
 ### Documentation
 
 http://godoc.org/github.com/keighl/mandrill
