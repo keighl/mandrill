@@ -243,7 +243,7 @@ func (c *Client) MessagesSend(message *Message) (responses []*Response, err erro
 }
 
 // MessagesSendTemplate sends a message using a Mandrill template
-func (c *Client) MessagesSendTemplate(message *Message, templateName string, contents map[string]interface{}) (responses []*Response, err error) {
+func (c *Client) MessagesSendTemplate(message *Message, templateName string, contents interface{}) (responses []*Response, err error) {
 
 	var data struct {
 		Key             string      `json:"key"`
@@ -311,8 +311,13 @@ func (m *Message) AddRecipient(email string, name string, sendType string) {
 }
 
 // ConvertMapToVariables converts a regular string/string map into the Variable struct
-func ConvertMapToVariables(m map[string]interface{}) []*Variable {
+func ConvertMapToVariables(i interface{}) []*Variable {
+	m, ok := i.(map[string]interface{})
+	if !ok {
+		return nil
+	}
 	variables := make([]*Variable, 0, len(m))
+
 	for k, v := range m {
 		variables = append(variables, &Variable{k, v})
 	}
@@ -321,17 +326,17 @@ func ConvertMapToVariables(m map[string]interface{}) []*Variable {
 
 // MapToVars converts a regular string/string map into the Variable struct
 // Alias of `ConvertMapToVariables`
-func MapToVars(m map[string]interface{}) []*Variable {
+func MapToVars(m interface{}) []*Variable {
 	return ConvertMapToVariables(m)
 }
 
 // ConvertMapToVariablesForRecipient converts a regular string/string map into the RcptMergeVars struct
-func ConvertMapToVariablesForRecipient(email string, m map[string]interface{}) *RcptMergeVars {
+func ConvertMapToVariablesForRecipient(email string, m interface{}) *RcptMergeVars {
 	return &RcptMergeVars{Rcpt: email, Vars: ConvertMapToVariables(m)}
 }
 
 // MapToRecipientVars converts a regular string/string map into the RcptMergeVars struct
 // Alias of `ConvertMapToVariablesForRecipient`
-func MapToRecipientVars(email string, m map[string]interface{}) *RcptMergeVars {
+func MapToRecipientVars(email string, m interface{}) *RcptMergeVars {
 	return ConvertMapToVariablesForRecipient(email, m)
 }
