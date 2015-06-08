@@ -143,14 +143,14 @@ func Test_AddRecipient(t *testing.T) {
 // ConvertMapToVariables /////
 
 func Test_ConvertMapToVariables(t *testing.T) {
-	m := map[string]string{"name": "bob"}
+	m := map[string]interface{}{"name": "bob"}
 	target := ConvertMapToVariables(m)
 	hand := []*Variable{&Variable{"name", "bob"}}
 	expect(t, reflect.DeepEqual(target, hand), true)
 }
 
 func Test_MapToVars(t *testing.T) {
-	m := map[string]string{"name": "bob"}
+	m := map[string]interface{}{"name": "bob"}
 	target := MapToVars(m)
 	hand := []*Variable{&Variable{"name", "bob"}}
 	expect(t, reflect.DeepEqual(target, hand), true)
