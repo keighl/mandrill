@@ -136,7 +136,7 @@ func Test_SANDBOX_ERROR(t *testing.T) {
 func Test_AddRecipient(t *testing.T) {
 	m := &Message{}
 	m.AddRecipient("bob@example.com", "Bob Johnson", "to")
-	tos := []*To{&To{"bob@example.com", "Bob Johnson", "to"}}
+	tos := []*To{{"bob@example.com", "Bob Johnson", "to"}}
 	expect(t, reflect.DeepEqual(m.To, tos), true)
 }
 
@@ -145,14 +145,24 @@ func Test_AddRecipient(t *testing.T) {
 func Test_ConvertMapToVariables(t *testing.T) {
 	m := map[string]interface{}{"name": "bob"}
 	target := ConvertMapToVariables(m)
-	hand := []*Variable{&Variable{"name", "bob"}}
+	hand := []*Variable{{"name", "bob"}}
+	expect(t, reflect.DeepEqual(target, hand), true)
+
+	ms := map[string]string{"name": "bob"}
+	target = ConvertMapToVariables(ms)
+	hand = []*Variable{{"name", "bob"}}
 	expect(t, reflect.DeepEqual(target, hand), true)
 }
 
 func Test_MapToVars(t *testing.T) {
 	m := map[string]interface{}{"name": "bob"}
 	target := MapToVars(m)
-	hand := []*Variable{&Variable{"name", "bob"}}
+	hand := []*Variable{{"name", "bob"}}
+	expect(t, reflect.DeepEqual(target, hand), true)
+
+	ms := map[string]interface{}{"name": "bob"}
+	target = MapToVars(ms)
+	hand = []*Variable{{"name", "bob"}}
 	expect(t, reflect.DeepEqual(target, hand), true)
 }
 
