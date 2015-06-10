@@ -312,10 +312,20 @@ func (m *Message) AddRecipient(email string, name string, sendType string) {
 
 // ConvertMapToVariables converts a regular string/string map into the Variable struct
 func ConvertMapToVariables(i interface{}) []*Variable {
-	m, ok := i.(map[string]interface{})
-	if !ok {
+
+	var m map[string]interface{}
+	switch temp := i.(type) {
+	case map[string]interface{}:
+		m = temp
+	case map[string]string:
+		m = make(map[string]interface{}, len(temp))
+		for k, v := range temp {
+			m[k] = v
+		}
+	default:
 		return nil
 	}
+
 	variables := make([]*Variable, 0, len(m))
 
 	for k, v := range m {
