@@ -149,6 +149,18 @@ func Test_ConvertMapToVariables(t *testing.T) {
 	expect(t, reflect.DeepEqual(target, hand), true)
 }
 
+func Test_ConvertMapToVariables_WithString(t *testing.T) {
+	m := map[string]string{"name": "bob"}
+	target := ConvertMapToVariables(m)
+	hand := []*Variable{&Variable{"name", "bob"}}
+	expect(t, reflect.DeepEqual(target, hand), true)
+}
+
+func Test_ConvertMapToVariables_BadType(t *testing.T) {
+	target := ConvertMapToVariables("CHEESE")
+	expect(t, len(target), 0)
+}
+
 func Test_MapToVars(t *testing.T) {
 	m := map[string]interface{}{"name": "bob"}
 	target := MapToVars(m)
