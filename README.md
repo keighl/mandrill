@@ -63,11 +63,11 @@ http://help.mandrill.com/entries/21678522-How-do-I-use-merge-tags-to-add-dynamic
 
 ```go
 // Global vars
-message.GlobalMergeVars = m.MapToVars(map[string]string{"name": "Bob"})
+message.GlobalMergeVars = m.MapToVars(map[string]interface{}{"name": "Bob"})
 
 // Recipient vars
-bobVars := m.MapToRecipientVars("bob@example.com", map[string]string{"name": "Bob"})
-jillVars := m.MapToRecipientVars("jill@example.com", map[string]string{"name": "Jill"})
+bobVars := m.MapToRecipientVars("bob@example.com", map[string]interface{}{"name": "Bob"})
+jillVars := m.MapToRecipientVars("jill@example.com", map[string]interface{}{"name": "Jill"})
 message.MergeVars = []*m.RcptMergeVars{bobVars, jillVars}
 ```
 
