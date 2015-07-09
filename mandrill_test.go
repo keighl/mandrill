@@ -36,7 +36,7 @@ func testTools(code int, body string) (*httptest.Server, *Client) {
 	}
 	httpClient := &http.Client{Transport: tr}
 
-	client := &Client{"APIKEY", server.URL, httpClient}
+	client := &Client{"APIKEY", server.URL+"/", httpClient}
 	return server, client
 }
 
