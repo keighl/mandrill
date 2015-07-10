@@ -80,7 +80,7 @@ You can pass special API keys to the client to mock success/err responses from `
 c := ClientWithKey("SANDBOX_SUCCESS")
 
 // Sending messages will error, but without a real API request
-c := ClientWithKey("SANDBOX_SUCCESS")
+c := ClientWithKey("SANDBOX_ERROR")
 ```
 
 

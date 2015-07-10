@@ -40,7 +40,7 @@
 //     c := ClientWithKey("SANDBOX_SUCCESS")
 
 //     // Sending messages will error, but without a real API request
-//     c := ClientWithKey("SANDBOX_SUCCESS")
+//     c := ClientWithKey("SANDBOX_ERROR")
 
 package mandrill
 
@@ -276,7 +276,7 @@ func (c *Client) sendMessagePayload(data interface{}, path string) (responses []
 	}
 
 	if c.Key == "SANDBOX_ERROR" {
-		return nil, errors.New("SANDBOX_SUCCESS")
+		return nil, errors.New("SANDBOX_ERROR")
 	}
 
 	payload, _ := json.Marshal(data)
