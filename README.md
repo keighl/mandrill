@@ -46,7 +46,7 @@ message.Text = "You won!!"
 responses, err := client.MessagesSend(message)
 ```
 
-### Send Template
+### Message Using Template
 
 https://mandrillapp.com/api/docs/messages.JSON.html#method=send-template
 
@@ -55,6 +55,32 @@ http://help.mandrill.com/entries/21694286-How-do-I-add-dynamic-content-using-edi
 ```go
 templateContent := map[string]string{"header": "Bob! You won the prize!"}
 responses, err := client.MessagesSendTemplate(message, "you-won", templateContent)
+```
+
+### Templates API
+
+https://mandrillapp.com/api/docs/templates.JSON.html
+
+- AddTemplate()
+- UpdateTemplate()
+- DeleteTemplate()
+- TemplateInfo()
+
+```go
+template := &m.Template{
+	Name:      "Example Template",
+	Subject:   "Account Activation",
+	HTML:      "<h1>You've signed up for *|SITE_NAME|*</h1>",
+	Text: "You've signed up for *|SITE_NAME|*",
+	FromEmail: "noreply@example.com",
+	FromName:  "Site Account System",
+	Labels: []string{"account", "account-activation"}
+}
+
+res, err := client.UpdateTemplate(template)
+if err != nil {
+	res, err = client.AddTemplate(template)
+}
 ```
 
 ### Including Merge Tags

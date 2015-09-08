@@ -144,6 +144,258 @@ func Test_Ping_Fail(t *testing.T) {
 	expect(t, reflect.DeepEqual(correctMessagesResponse, err), true)
 }
 
+// AddTemplate //////////
+
+func Test_AddTemplate_Success(t *testing.T) {
+	server, m := testTools(200, `{
+	    "slug": "example-template",
+	    "name": "Example Template",
+	    "labels": [
+	        "example-label"
+	    ],
+	    "code": "<div mc:edit=\"editable\">editable content</div>",
+	    "subject": "example subject",
+	    "from_email": "from.email@example.com",
+	    "from_name": "Example Name",
+	    "text": "Example text",
+	    "publish_name": "Example Template",
+	    "publish_code": "<div mc:edit=\"editable\">different than draft content</div>",
+	    "publish_subject": "example publish_subject",
+	    "publish_from_email": "from.email.published@example.com",
+	    "publish_from_name": "Example Published Name",
+	    "publish_text": "Example published text",
+	    "published_at": "2013-01-01 15:30:40",
+	    "created_at": "2013-01-01 15:30:27",
+	    "updated_at": "2013-01-01 15:30:49"
+	}`)
+	defer server.Close()
+	response, err := m.AddTemplate(&Template{})
+
+	expect(t, err, nil)
+
+	correctResponse := &Template{
+		Name:      "Example Template",
+		Slug:      "example-template",
+		Subject:   "example subject",
+		FromEmail: "from.email@example.com",
+		FromName:  "Example Name",
+		HTML:      "<div mc:edit=\"editable\">editable content</div>",
+		Text:      "Example text",
+		Labels:    []string{"example-label"},
+	}
+	expect(t, reflect.DeepEqual(correctResponse, response), true)
+}
+
+func Test_AddTemplate_Fail(t *testing.T) {
+	server, m := testTools(400, `{
+	    "status": "error",
+	    "code": -1,
+	    "name": "Invalid_Key",
+	    "message": "Invalid API key"
+	}`)
+	defer server.Close()
+	_, err := m.AddTemplate(&Template{})
+
+	refute(t, err, nil)
+
+	correctError := &Error{
+		Status:  "error",
+		Code:    -1,
+		Name:    "Invalid_Key",
+		Message: "Invalid API key",
+	}
+	expect(t, reflect.DeepEqual(correctError, err), true)
+}
+
+// UpdateTemplate //////////
+
+func Test_UpdateTemplate_Success(t *testing.T) {
+	server, m := testTools(200, `{
+	    "slug": "example-template",
+	    "name": "Example Template",
+	    "labels": [
+	        "example-label"
+	    ],
+	    "code": "<div mc:edit=\"editable\">editable content</div>",
+	    "subject": "example subject",
+	    "from_email": "from.email@example.com",
+	    "from_name": "Example Name",
+	    "text": "Example text",
+	    "publish_name": "Example Template",
+	    "publish_code": "<div mc:edit=\"editable\">different than draft content</div>",
+	    "publish_subject": "example publish_subject",
+	    "publish_from_email": "from.email.published@example.com",
+	    "publish_from_name": "Example Published Name",
+	    "publish_text": "Example published text",
+	    "published_at": "2013-01-01 15:30:40",
+	    "created_at": "2013-01-01 15:30:27",
+	    "updated_at": "2013-01-01 15:30:49"
+	}`)
+	defer server.Close()
+	response, err := m.UpdateTemplate(&Template{})
+
+	expect(t, err, nil)
+
+	correctResponse := &Template{
+		Name:      "Example Template",
+		Slug:      "example-template",
+		Subject:   "example subject",
+		FromEmail: "from.email@example.com",
+		FromName:  "Example Name",
+		HTML:      "<div mc:edit=\"editable\">editable content</div>",
+		Text:      "Example text",
+		Labels:    []string{"example-label"},
+	}
+	expect(t, reflect.DeepEqual(correctResponse, response), true)
+}
+
+func Test_UpdateTemplate_Fail(t *testing.T) {
+	server, m := testTools(400, `{
+	    "status": "error",
+	    "code": -1,
+	    "name": "Invalid_Key",
+	    "message": "Invalid API key"
+	}`)
+	defer server.Close()
+	_, err := m.UpdateTemplate(&Template{})
+
+	refute(t, err, nil)
+
+	correctError := &Error{
+		Status:  "error",
+		Code:    -1,
+		Name:    "Invalid_Key",
+		Message: "Invalid API key",
+	}
+	expect(t, reflect.DeepEqual(correctError, err), true)
+}
+
+// DeleteTemplate //////////
+
+func Test_DeleteTemplate_Success(t *testing.T) {
+	server, m := testTools(200, `{
+	    "slug": "example-template",
+	    "name": "Example Template",
+	    "labels": [
+	        "example-label"
+	    ],
+	    "code": "<div mc:edit=\"editable\">editable content</div>",
+	    "subject": "example subject",
+	    "from_email": "from.email@example.com",
+	    "from_name": "Example Name",
+	    "text": "Example text",
+	    "publish_name": "Example Template",
+	    "publish_code": "<div mc:edit=\"editable\">different than draft content</div>",
+	    "publish_subject": "example publish_subject",
+	    "publish_from_email": "from.email.published@example.com",
+	    "publish_from_name": "Example Published Name",
+	    "publish_text": "Example published text",
+	    "published_at": "2013-01-01 15:30:40",
+	    "created_at": "2013-01-01 15:30:27",
+	    "updated_at": "2013-01-01 15:30:49"
+	}`)
+	defer server.Close()
+	response, err := m.DeleteTemplate("")
+
+	expect(t, err, nil)
+
+	correctResponse := &Template{
+		Name:      "Example Template",
+		Slug:      "example-template",
+		Subject:   "example subject",
+		FromEmail: "from.email@example.com",
+		FromName:  "Example Name",
+		HTML:      "<div mc:edit=\"editable\">editable content</div>",
+		Text:      "Example text",
+		Labels:    []string{"example-label"},
+	}
+	expect(t, reflect.DeepEqual(correctResponse, response), true)
+}
+
+func Test_DeleteTemplate_Fail(t *testing.T) {
+	server, m := testTools(400, `{
+	    "status": "error",
+	    "code": -1,
+	    "name": "Invalid_Key",
+	    "message": "Invalid API key"
+	}`)
+	defer server.Close()
+	_, err := m.DeleteTemplate("")
+
+	refute(t, err, nil)
+
+	correctError := &Error{
+		Status:  "error",
+		Code:    -1,
+		Name:    "Invalid_Key",
+		Message: "Invalid API key",
+	}
+	expect(t, reflect.DeepEqual(correctError, err), true)
+}
+
+// TemplateInfo //////////
+
+func Test_TemplateInfo_Success(t *testing.T) {
+	server, m := testTools(200, `{
+	    "slug": "example-template",
+	    "name": "Example Template",
+	    "labels": [
+	        "example-label"
+	    ],
+	    "code": "<div mc:edit=\"editable\">editable content</div>",
+	    "subject": "example subject",
+	    "from_email": "from.email@example.com",
+	    "from_name": "Example Name",
+	    "text": "Example text",
+	    "publish_name": "Example Template",
+	    "publish_code": "<div mc:edit=\"editable\">different than draft content</div>",
+	    "publish_subject": "example publish_subject",
+	    "publish_from_email": "from.email.published@example.com",
+	    "publish_from_name": "Example Published Name",
+	    "publish_text": "Example published text",
+	    "published_at": "2013-01-01 15:30:40",
+	    "created_at": "2013-01-01 15:30:27",
+	    "updated_at": "2013-01-01 15:30:49"
+	}`)
+	defer server.Close()
+	response, err := m.TemplateInfo("")
+
+	expect(t, err, nil)
+
+	correctResponse := &Template{
+		Name:      "Example Template",
+		Slug:      "example-template",
+		Subject:   "example subject",
+		FromEmail: "from.email@example.com",
+		FromName:  "Example Name",
+		HTML:      "<div mc:edit=\"editable\">editable content</div>",
+		Text:      "Example text",
+		Labels:    []string{"example-label"},
+	}
+	expect(t, reflect.DeepEqual(correctResponse, response), true)
+}
+
+func Test_TemplateInfo_Fail(t *testing.T) {
+	server, m := testTools(400, `{
+	    "status": "error",
+	    "code": 5,
+	    "name": "Unknown_Template",
+	    "message": "No such template \"Example Template\""
+	}`)
+	defer server.Close()
+	_, err := m.AddTemplate(&Template{})
+
+	refute(t, err, nil)
+
+	correctError := &Error{
+		Status:  "error",
+		Code:    5,
+		Name:    "Unknown_Template",
+		Message: "No such template \"Example Template\"",
+	}
+	expect(t, reflect.DeepEqual(correctError, err), true)
+}
+
 // TEST Keys //////////
 
 func Test_SANDBOX_SUCCESS(t *testing.T) {

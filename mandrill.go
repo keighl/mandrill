@@ -317,7 +317,7 @@ func (c *Client) AddTemplate(template *Template) (response *Template, err error)
 
 	body, err := c.sendApiRequest(template, "templates/add.json")
 	if err != nil {
-		return response, err
+		return nil, err
 	}
 
 	err = json.Unmarshal(body, &response)
