@@ -161,6 +161,25 @@ type Template struct {
 	Labels []string `json:"labels,omitempty"`
 }
 
+// Subaccount struct to send & receive responses via Subaccount API
+type Subaccount struct {
+	// api key
+	Key string `json:"key"`
+	// subaccount id
+	Id    string `json:"id"`
+	Name  string `json:"name"`
+	Notes string `json:"notes"`
+	// custom quota (hourly)
+	Quota int `json:"custom_quota"`
+	// response only fields
+	Reputation   int    `json:"reputation"`
+	Status       string `json:"status"`
+	Sent_hourly  int    `json:"sent_hourly"`
+	Sent_weekly  int    `json:"sent_weekly"`
+	Sent_monthly int    `json:"sent_monthly"`
+	Sent_total   int    `json:"sent_total"`
+}
+
 // To is a single recipient's information.
 type To struct {
 	// the email address of the recipient
@@ -370,6 +389,74 @@ func (c *Client) TemplateInfo(template_name string) (response *Template, err err
 	data.Name = template_name
 
 	body, err := c.sendApiRequest(data, "templates/info.json")
+	if err != nil {
+		return response, err
+	}
+
+	err = json.Unmarshal(body, &response)
+	return response, err
+}
+
+// Add a new subaccount
+func (c *Client) AddSubaccount(subaccount *Subaccount) (response *Subaccount, err error) {
+
+	subaccount.Key = c.Key
+
+	body, err := c.sendApiRequest(subaccount, "subaccounts/add.json")
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(body, &response)
+	return response, err
+}
+
+// Update subaccount
+func (c *Client) UpdateSubaccount(subaccount *Subaccount) (response *Subaccount, err error) {
+
+	subaccount.Key = c.Key
+
+	body, err := c.sendApiRequest(subaccount, "subaccounts/update.json")
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(body, &response)
+	return response, err
+}
+
+// Delete Subaccount
+func (c *Client) DeleteSubaccount(subaccount_id string) (response *Subaccount, err error) {
+
+	var data struct {
+		Key string `json:"key"`
+		Id  string `json:"id"`
+	}
+
+	data.Key = c.Key
+	data.Id = subaccount_id
+
+	body, err := c.sendApiRequest(data, "subaccounts/delete.json")
+	if err != nil {
+		return response, err
+	}
+
+	err = json.Unmarshal(body, &response)
+	return response, err
+}
+
+// Get subaccount info
+func (c *Client) SubaccountInfo(subaccount_id string) (response *Subaccount, err error) {
+
+	var data struct {
+		Key string `json:"key"`
+		Id  string `json:"id"`
+	}
+
+	data.Key = c.Key
+	data.Id = subaccount_id
+
+	body, err := c.sendApiRequest(data, "subaccounts/info.json")
 	if err != nil {
 		return response, err
 	}

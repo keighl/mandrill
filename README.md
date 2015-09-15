@@ -83,6 +83,29 @@ if err != nil {
 }
 ```
 
+### Subaccounts API
+
+https://mandrillapp.com/api/docs/subaccounts.JSON.html
+
+- AddSubaccount()
+- UpdateSubaccount()
+- DeleteSubaccount()
+- SubaccountInfo()
+
+```go
+subaccount := &m.Subaccount{
+	Id:           "cust-123",
+	Name:         "ABC Widgets, Inc.",
+	Notes:        "Free plan user, signed up on 2013-01-01 12:00:00",
+	Quota:        42,
+}
+
+res, err := client.UpdateSubaccount(subaccount)
+if err != nil {
+	res, err = client.AddSubaccount(subaccount)
+}
+```
+
 ### Including Merge Tags
 
 http://help.mandrill.com/entries/21678522-How-do-I-use-merge-tags-to-add-dynamic-content-

@@ -383,7 +383,8 @@ func Test_TemplateInfo_Fail(t *testing.T) {
 	    "message": "No such template \"Example Template\""
 	}`)
 	defer server.Close()
-	_, err := m.AddTemplate(&Template{})
+
+	_, err := m.TemplateInfo("")
 
 	refute(t, err, nil)
 
@@ -392,6 +393,248 @@ func Test_TemplateInfo_Fail(t *testing.T) {
 		Code:    5,
 		Name:    "Unknown_Template",
 		Message: "No such template \"Example Template\"",
+	}
+	expect(t, reflect.DeepEqual(correctError, err), true)
+}
+
+// AddSubaccount //////////
+
+func Test_AddSubaccount_Success(t *testing.T) {
+	server, m := testTools(200, `{
+	    "id": "cust-123",
+	    "name": "ABD Widgets, Inc.",
+	    "custom_quota": 42,
+	    "status": "active",
+	    "reputation": 42,
+	    "created_at": "2013-01-01 15:30:27",
+	    "first_sent_at": "2013-01-01 15:30:29",
+	    "sent_weekly": 42,
+	    "sent_monthly": 42,
+	    "sent_total": 42
+	}`)
+	defer server.Close()
+
+	response, err := m.AddSubaccount(&Subaccount{})
+
+	expect(t, err, nil)
+
+	correctResponse := &Subaccount{
+		Id:           "cust-123",
+		Name:         "ABD Widgets, Inc.",
+		Quota:        42,
+		Reputation:   42,
+		Status:       "active",
+		Sent_hourly:  0,
+		Sent_weekly:  42,
+		Sent_monthly: 42,
+		Sent_total:   42,
+	}
+	expect(t, reflect.DeepEqual(correctResponse, response), true)
+}
+
+func Test_AddSubaccount_Fail(t *testing.T) {
+	server, m := testTools(400, `{
+	    "status": "error",
+	    "code": -1,
+	    "name": "Invalid_Key",
+	    "message": "Invalid API key"
+	}`)
+	defer server.Close()
+
+	_, err := m.AddSubaccount(&Subaccount{})
+
+	refute(t, err, nil)
+
+	correctError := &Error{
+		Status:  "error",
+		Code:    -1,
+		Name:    "Invalid_Key",
+		Message: "Invalid API key",
+	}
+	expect(t, reflect.DeepEqual(correctError, err), true)
+}
+
+// UpdateSubaccount //////////
+
+func Test_UpdateSubaccount_Success(t *testing.T) {
+	server, m := testTools(200, `{
+	    "id": "cust-123",
+	    "name": "ABD Widgets, Inc.",
+	    "custom_quota": 43,
+	    "status": "active",
+	    "reputation": 43,
+	    "created_at": "2013-01-01 15:30:27",
+	    "first_sent_at": "2013-01-01 15:30:29",
+	    "sent_weekly": 43,
+	    "sent_monthly": 43,
+	    "sent_total": 43
+	}`)
+	defer server.Close()
+
+	response, err := m.UpdateSubaccount(&Subaccount{})
+
+	expect(t, err, nil)
+
+	correctResponse := &Subaccount{
+		Id:           "cust-123",
+		Name:         "ABD Widgets, Inc.",
+		Quota:        43,
+		Reputation:   43,
+		Status:       "active",
+		Sent_hourly:  0,
+		Sent_weekly:  43,
+		Sent_monthly: 43,
+		Sent_total:   43,
+	}
+	expect(t, reflect.DeepEqual(correctResponse, response), true)
+}
+
+func Test_UpdateSubaccount_Fail(t *testing.T) {
+	server, m := testTools(400, `{
+	    "status": "error",
+	    "code": -1,
+	    "name": "Invalid_Key",
+	    "message": "Invalid API key"
+	}`)
+	defer server.Close()
+
+	_, err := m.UpdateSubaccount(&Subaccount{})
+
+	refute(t, err, nil)
+
+	correctError := &Error{
+		Status:  "error",
+		Code:    -1,
+		Name:    "Invalid_Key",
+		Message: "Invalid API key",
+	}
+	expect(t, reflect.DeepEqual(correctError, err), true)
+}
+
+// DeleteSubaccount //////////
+
+func Test_DeleteSubaccount_Success(t *testing.T) {
+	server, m := testTools(200, `{
+	    "id": "cust-123",
+	    "name": "ABD Widgets, Inc.",
+	    "custom_quota": 43,
+	    "status": "active",
+	    "reputation": 43,
+	    "created_at": "2013-01-01 15:30:27",
+	    "first_sent_at": "2013-01-01 15:30:29",
+	    "sent_weekly": 43,
+	    "sent_monthly": 43,
+	    "sent_total": 43
+	}`)
+	defer server.Close()
+
+	response, err := m.DeleteSubaccount("")
+
+	expect(t, err, nil)
+
+	correctResponse := &Subaccount{
+		Id:           "cust-123",
+		Name:         "ABD Widgets, Inc.",
+		Quota:        43,
+		Reputation:   43,
+		Status:       "active",
+		Sent_hourly:  0,
+		Sent_weekly:  43,
+		Sent_monthly: 43,
+		Sent_total:   43,
+	}
+	expect(t, reflect.DeepEqual(correctResponse, response), true)
+}
+
+func Test_DeleteSubaccount_Fail(t *testing.T) {
+	server, m := testTools(400, `{
+	    "status": "error",
+	    "code": 12,
+	    "name": "Unknown_Subaccount",
+	    "message": "No subaccount exists with the id 'customer-123'"
+	}`)
+	defer server.Close()
+
+	_, err := m.DeleteSubaccount("")
+
+	refute(t, err, nil)
+
+	correctError := &Error{
+		Status:  "error",
+		Code:    12,
+		Name:    "Unknown_Subaccount",
+		Message: "No subaccount exists with the id 'customer-123'",
+	}
+	expect(t, reflect.DeepEqual(correctError, err), true)
+}
+
+// SubaccountInfo //////////
+
+func Test_SubaccountInfo_Success(t *testing.T) {
+	server, m := testTools(200, `{
+	    "id": "cust-123",
+	    "name": "ABC Widgets, Inc.",
+	    "notes": "Free plan user, signed up on 2013-01-01 12:00:00",
+	    "custom_quota": 42,
+	    "status": "active",
+	    "reputation": 42,
+	    "created_at": "2013-01-01 15:30:27",
+	    "first_sent_at": "2013-01-01 15:30:29",
+	    "sent_weekly": 42,
+	    "sent_monthly": 42,
+	    "sent_total": 42,
+	    "sent_hourly": 42,
+	    "hourly_quota": 42,
+	    "last_30_days": {
+	        "sent": 42,
+	        "hard_bounces": 42,
+	        "soft_bounces": 42,
+	        "rejects": 42,
+	        "complaints": 42,
+	        "unsubs": 42,
+	        "opens": 42,
+	        "unique_opens": 42,
+	        "clicks": 42,
+	        "unique_clicks": 42
+	    }
+	}`)
+	defer server.Close()
+	response, err := m.SubaccountInfo("")
+
+	expect(t, err, nil)
+
+	correctResponse := &Subaccount{
+		Id:           "cust-123",
+		Name:         "ABC Widgets, Inc.",
+		Notes:        "Free plan user, signed up on 2013-01-01 12:00:00",
+		Quota:        42,
+		Reputation:   42,
+		Status:       "active",
+		Sent_hourly:  42,
+		Sent_weekly:  42,
+		Sent_monthly: 42,
+		Sent_total:   42,
+	}
+	expect(t, reflect.DeepEqual(correctResponse, response), true)
+}
+
+func Test_SubaccountInfo_Fail(t *testing.T) {
+	server, m := testTools(400, `{
+	    "status": "error",
+	    "code": 12,
+	    "name": "Unknown_Subaccount",
+	    "message": "No subaccount exists with the id 'customer-123'"
+	}`)
+	defer server.Close()
+	_, err := m.SubaccountInfo("")
+
+	refute(t, err, nil)
+
+	correctError := &Error{
+		Status:  "error",
+		Code:    12,
+		Name:    "Unknown_Subaccount",
+		Message: "No subaccount exists with the id 'customer-123'",
 	}
 	expect(t, reflect.DeepEqual(correctError, err), true)
 }
