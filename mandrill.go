@@ -167,17 +167,17 @@ type Subaccount struct {
 	Key string `json:"key"`
 	// subaccount id
 	Id    string `json:"id"`
-	Name  string `json:"name"`
-	Notes string `json:"notes"`
+	Name  string `json:"name,omitempty"`
+	Notes string `json:"notes,omitempty"`
 	// custom quota (hourly)
-	Quota int `json:"custom_quota"`
+	Quota int `json:"custom_quota,omitempty"`
 	// response only fields
-	Reputation   int    `json:"reputation"`
-	Status       string `json:"status"`
-	Sent_hourly  int    `json:"sent_hourly"`
-	Sent_weekly  int    `json:"sent_weekly"`
-	Sent_monthly int    `json:"sent_monthly"`
-	Sent_total   int    `json:"sent_total"`
+	Reputation   int    `json:"reputation,omitempty"`
+	Status       string `json:"status,omitempty"`
+	Sent_hourly  int    `json:"sent_hourly,omitempty"`
+	Sent_weekly  int    `json:"sent_weekly,omitempty"`
+	Sent_monthly int    `json:"sent_monthly,omitempty"`
+	Sent_total   int    `json:"sent_total,omitempty"`
 }
 
 // To is a single recipient's information.
