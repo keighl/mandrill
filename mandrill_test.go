@@ -11,13 +11,13 @@ import (
 
 func expect(t *testing.T, a interface{}, b interface{}) {
 	if a != b {
-		t.Errorf("Expected %v (type %v) - Got %v (type %v)", b, reflect.TypeOf(b), a, reflect.TypeOf(a))
+		t.Errorf("Expected %v (type %[1]T) - Got %v (type %[2]T)", b, a)
 	}
 }
 
 func refute(t *testing.T, a interface{}, b interface{}) {
 	if a == b {
-		t.Errorf("Did not expect %v (type %v) - Got %v (type %v)", b, reflect.TypeOf(b), a, reflect.TypeOf(a))
+		t.Errorf("Did not expect %v (type %[1]T) - Got %v (type %[2]T)", b, a)
 	}
 }
 
@@ -36,7 +36,7 @@ func testTools(code int, body string) (*httptest.Server, *Client) {
 	}
 	httpClient := &http.Client{Transport: tr}
 
-	client := &Client{"APIKEY", server.URL+"/", httpClient}
+	client := &Client{"APIKEY", server.URL + "/", httpClient}
 	return server, client
 }
 
