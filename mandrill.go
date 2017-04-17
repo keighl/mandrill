@@ -136,6 +136,50 @@ type Message struct {
 	SendAt string `json:"-"`
 }
 
+// Template represents the template payload sent to the API
+type Template struct {
+	// api key
+	Key string `json:"key"`
+	// the template name, unique
+	Name string `json:"name"`
+	// the immutable unique code name of the template
+	Slug string `json:"slug,omitempty"`
+
+	// the message subject
+	Subject string `json:"subject,omitempty"`
+	// the sender email address.
+	FromEmail string `json:"from_email,omitempty"`
+	// optional from name to be used
+	FromName string `json:"from_name,omitempty"`
+
+	// the full HTML content to be sent
+	HTML string `json:"code,omitempty"`
+	// optional full text content to be sent
+	Text string `json:"text,omitempty"`
+
+	// an optional array of up to 10 labels to use for filtering templates
+	Labels []string `json:"labels,omitempty"`
+}
+
+// Subaccount struct to send & receive responses via Subaccount API
+type Subaccount struct {
+	// api key
+	Key string `json:"key"`
+	// subaccount id
+	Id    string `json:"id"`
+	Name  string `json:"name"`
+	Notes string `json:"notes"`
+	// custom quota (hourly)
+	Quota int `json:"custom_quota"`
+	// response only fields
+	Reputation   int    `json:"reputation"`
+	Status       string `json:"status"`
+	Sent_hourly  int    `json:"sent_hourly"`
+	Sent_weekly  int    `json:"sent_weekly"`
+	Sent_monthly int    `json:"sent_monthly"`
+	Sent_total   int    `json:"sent_total"`
+}
+
 // To is a single recipient's information.
 type To struct {
 	// the email address of the recipient
@@ -179,8 +223,8 @@ type Attachment struct {
 	Content string `json:"content"`
 }
 
-// Response holds details of the message status
-type Response struct {
+// MessagesResponse holds details of the message status
+type MessagesResponse struct {
 	// the email address of the recipient
 	Email string `json:"email"`
 	// the sending status of the recipient - either "sent", "queued", "scheduled", "rejected", or "invalid"
@@ -219,8 +263,24 @@ func ClientWithKey(key string) *Client {
 	}
 }
 
+func (c *Client) Ping() (pong string, err error) {
+	var data struct {
+		Key string `json:"key"`
+	}
+
+	data.Key = c.Key
+
+	body, err := c.sendApiRequest(data, "users/ping.json")
+	if err != nil {
+		return pong, err
+	}
+
+	err = json.Unmarshal(body, &pong)
+	return pong, err
+}
+
 // MessagesSend sends a message via an API client
-func (c *Client) MessagesSend(message *Message) (responses []*Response, err error) {
+func (c *Client) MessagesSend(message *Message) (responses []*MessagesResponse, err error) {
 
 	var data struct {
 		Key     string   `json:"key"`
@@ -243,7 +303,7 @@ func (c *Client) MessagesSend(message *Message) (responses []*Response, err erro
 }
 
 // MessagesSendTemplate sends a message using a Mandrill template
-func (c *Client) MessagesSendTemplate(message *Message, templateName string, contents interface{}) (responses []*Response, err error) {
+func (c *Client) MessagesSendTemplate(message *Message, templateName string, contents interface{}) (responses []*MessagesResponse, err error) {
 
 	var data struct {
 		Key             string      `json:"key"`
@@ -269,38 +329,140 @@ func (c *Client) MessagesSendTemplate(message *Message, templateName string, con
 	return c.sendMessagePayload(data, "messages/send-template.json")
 }
 
-func (c *Client) sendMessagePayload(data interface{}, path string) (responses []*Response, err error) {
+// Add a new template
+func (c *Client) AddTemplate(template *Template) (response *Template, err error) {
 
-	if c.Key == "SANDBOX_SUCCESS" {
-		return []*Response{}, nil
-	}
+	template.Key = c.Key
 
-	if c.Key == "SANDBOX_ERROR" {
-		return nil, errors.New("SANDBOX_ERROR")
-	}
-
-	payload, _ := json.Marshal(data)
-
-	resp, err := c.HTTPClient.Post(c.BaseURL+path, "application/json", bytes.NewReader(payload))
+	body, err := c.sendApiRequest(template, "templates/add.json")
 	if err != nil {
-		return responses, err
+		return nil, err
 	}
 
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	err = json.Unmarshal(body, &response)
+	return response, err
+}
+
+// Update template
+func (c *Client) UpdateTemplate(template *Template) (response *Template, err error) {
+
+	template.Key = c.Key
+
+	body, err := c.sendApiRequest(template, "templates/update.json")
 	if err != nil {
-		return responses, err
+		return response, err
 	}
 
-	if resp.StatusCode >= 400 {
-		resError := &Error{}
-		err = json.Unmarshal(body, resError)
-		return responses, resError
+	err = json.Unmarshal(body, &response)
+	return response, err
+}
+
+// Delete template
+func (c *Client) DeleteTemplate(template_name string) (response *Template, err error) {
+
+	var data struct {
+		Key  string `json:"key"`
+		Name string `json:"name"`
 	}
 
-	responses = make([]*Response, 0)
-	err = json.Unmarshal(body, &responses)
-	return responses, err
+	data.Key = c.Key
+	data.Name = template_name
+
+	body, err := c.sendApiRequest(data, "templates/delete.json")
+	if err != nil {
+		return response, err
+	}
+
+	err = json.Unmarshal(body, &response)
+	return response, err
+}
+
+// Get template
+func (c *Client) TemplateInfo(template_name string) (response *Template, err error) {
+
+	var data struct {
+		Key  string `json:"key"`
+		Name string `json:"name"`
+	}
+
+	data.Key = c.Key
+	data.Name = template_name
+
+	body, err := c.sendApiRequest(data, "templates/info.json")
+	if err != nil {
+		return response, err
+	}
+
+	err = json.Unmarshal(body, &response)
+	return response, err
+}
+
+// Add a new subaccount
+func (c *Client) AddSubaccount(subaccount *Subaccount) (response *Subaccount, err error) {
+
+	subaccount.Key = c.Key
+
+	body, err := c.sendApiRequest(subaccount, "subaccounts/add.json")
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(body, &response)
+	return response, err
+}
+
+// Update subaccount
+func (c *Client) UpdateSubaccount(subaccount *Subaccount) (response *Subaccount, err error) {
+
+	subaccount.Key = c.Key
+
+	body, err := c.sendApiRequest(subaccount, "subaccounts/update.json")
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(body, &response)
+	return response, err
+}
+
+// Delete Subaccount
+func (c *Client) DeleteSubaccount(subaccount_id string) (response *Subaccount, err error) {
+
+	var data struct {
+		Key string `json:"key"`
+		Id  string `json:"id"`
+	}
+
+	data.Key = c.Key
+	data.Id = subaccount_id
+
+	body, err := c.sendApiRequest(data, "subaccounts/delete.json")
+	if err != nil {
+		return response, err
+	}
+
+	err = json.Unmarshal(body, &response)
+	return response, err
+}
+
+// Get subaccount info
+func (c *Client) SubaccountInfo(subaccount_id string) (response *Subaccount, err error) {
+
+	var data struct {
+		Key string `json:"key"`
+		Id  string `json:"id"`
+	}
+
+	data.Key = c.Key
+	data.Id = subaccount_id
+
+	body, err := c.sendApiRequest(data, "subaccounts/info.json")
+	if err != nil {
+		return response, err
+	}
+
+	err = json.Unmarshal(body, &response)
+	return response, err
 }
 
 // AddRecipient appends a recipient to the message
@@ -308,6 +470,47 @@ func (c *Client) sendMessagePayload(data interface{}, path string) (responses []
 func (m *Message) AddRecipient(email string, name string, sendType string) {
 	to := &To{email, name, sendType}
 	m.To = append(m.To, to)
+}
+
+func (c *Client) sendMessagePayload(data interface{}, path string) (responses []*MessagesResponse, err error) {
+	if c.Key == "SANDBOX_SUCCESS" {
+		return []*MessagesResponse{}, nil
+	}
+
+	if c.Key == "SANDBOX_ERROR" {
+		return nil, errors.New("SANDBOX_ERROR")
+	}
+
+	body, err := c.sendApiRequest(data, path)
+	if err != nil {
+		return responses, err
+	}
+	responses = make([]*MessagesResponse, 0)
+	err = json.Unmarshal(body, &responses)
+	return responses, err
+}
+
+func (c *Client) sendApiRequest(data interface{}, path string) (body []byte, err error) {
+	payload, _ := json.Marshal(data)
+
+	resp, err := c.HTTPClient.Post(c.BaseURL+path, "application/json", bytes.NewReader(payload))
+	if err != nil {
+		return body, err
+	}
+
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return body, err
+	}
+
+	if resp.StatusCode >= 400 {
+		resError := &Error{}
+		err = json.Unmarshal(body, resError)
+		return body, resError
+	}
+
+	return body, err
 }
 
 // ConvertMapToVariables converts a regular string/string map into the Variable struct

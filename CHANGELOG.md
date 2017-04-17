@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.1.0 - 2015-09-08
+
+* Templates API support implemented
+* Added Ping() func
+
 ## 1.0.0 - 2015-05-18
 
 * Refactoring error responses. Was `res, apiError, err :=`, now is just `res, err :=`
