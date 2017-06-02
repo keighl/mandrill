@@ -93,7 +93,7 @@ type Message struct {
 	// whether or not to strip the query string from URLs when aggregating tracked URL data
 	URLStripQS bool `json:"url_strip_qs,omitempty"`
 	// whether or not to expose all recipients in to "To" header for each email
-	PreserveRecipients bool `json:"preserve_recipients,omitempty"`
+	PreserveRecipients bool `json:"preserve_recipients"`
 	// set to false to remove content logging for sensitive emails
 	ViewContentLink bool `json:"view_content_link,omitempty"`
 	// an optional address to receive an exact copy of each recipient's email
