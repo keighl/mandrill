@@ -117,6 +117,33 @@ func Test_MessageSend_Fail(t *testing.T) {
 	expect(t, reflect.DeepEqual(correctResponse, err), true)
 }
 
+// Ping //////////
+
+func Test_Ping_Success(t *testing.T) {
+	server, m := testTools(200, `"PONG!"`)
+	defer server.Close()
+	response, err := m.Ping()
+
+	expect(t, response, "PONG!")
+	expect(t, err, nil)
+}
+
+func Test_Ping_Fail(t *testing.T) {
+	server, m := testTools(400, `{"status":"error","code":-1,"name":"Invalid_Key","message":"Invalid API key"}`)
+	defer server.Close()
+	response, err := m.Ping()
+
+	expect(t, response, "")
+
+	correctMessagesResponse := &Error{
+		Status:  "error",
+		Code:    -1,
+		Name:    "Invalid_Key",
+		Message: "Invalid API key",
+	}
+	expect(t, reflect.DeepEqual(correctMessagesResponse, err), true)
+}
+
 // TEST Keys //////////
 
 func Test_SANDBOX_SUCCESS(t *testing.T) {

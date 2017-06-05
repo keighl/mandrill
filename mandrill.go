@@ -219,6 +219,22 @@ func ClientWithKey(key string) *Client {
 	}
 }
 
+func (c *Client) Ping() (pong string, err error) {
+	var data struct {
+		Key string `json:"key"`
+	}
+
+	data.Key = c.Key
+
+	body, err := c.sendApiRequest(data, "users/ping.json")
+	if err != nil {
+		return pong, err
+	}
+
+	err = json.Unmarshal(body, &pong)
+	return pong, err
+}
+
 // MessagesSend sends a message via an API client
 func (c *Client) MessagesSend(message *Message) (responses []*Response, err error) {
 
@@ -279,28 +295,36 @@ func (c *Client) sendMessagePayload(data interface{}, path string) (responses []
 		return nil, errors.New("SANDBOX_ERROR")
 	}
 
+	body, err := c.sendApiRequest(data, path)
+	if err != nil {
+		return responses, err
+	}
+	responses = make([]*Response, 0)
+	err = json.Unmarshal(body, &responses)
+	return responses, err
+}
+
+func (c *Client) sendApiRequest(data interface{}, path string) (body []byte, err error) {
 	payload, _ := json.Marshal(data)
 
 	resp, err := c.HTTPClient.Post(c.BaseURL+path, "application/json", bytes.NewReader(payload))
 	if err != nil {
-		return responses, err
+		return body, err
 	}
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return responses, err
+		return body, err
 	}
 
 	if resp.StatusCode >= 400 {
 		resError := &Error{}
 		err = json.Unmarshal(body, resError)
-		return responses, resError
+		return body, resError
 	}
 
-	responses = make([]*Response, 0)
-	err = json.Unmarshal(body, &responses)
-	return responses, err
+	return body, err
 }
 
 // AddRecipient appends a recipient to the message
