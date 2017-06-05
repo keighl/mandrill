@@ -124,7 +124,7 @@ type Message struct {
 	Metadata map[string]string `json:"metadata,omitempty"`
 	// Per-recipient metadata that will override the global values specified in the metadata parameter.
 	RecipientMetadata []*RcptMetadata `json:"recipient_metadata,omitempty"`
-	// Per-recipient metadata that will override the global values specified in the metadata parameter.
+	// an array of supported attachments to add to the message
 	Attachments []*Attachment `json:"attachments,omitempty"`
 	// an array of embedded images to add to the message
 	Images []*Attachment `json:"images,omitempty"`
