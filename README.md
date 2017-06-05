@@ -46,7 +46,7 @@ message.Text = "You won!!"
 responses, err := client.MessagesSend(message)
 ```
 
-### Send Template
+### Message Using Template
 
 https://mandrillapp.com/api/docs/messages.JSON.html#method=send-template
 
@@ -55,6 +55,55 @@ http://help.mandrill.com/entries/21694286-How-do-I-add-dynamic-content-using-edi
 ```go
 templateContent := map[string]string{"header": "Bob! You won the prize!"}
 responses, err := client.MessagesSendTemplate(message, "you-won", templateContent)
+```
+
+### Templates API
+
+https://mandrillapp.com/api/docs/templates.JSON.html
+
+- AddTemplate()
+- UpdateTemplate()
+- DeleteTemplate()
+- TemplateInfo()
+
+```go
+template := &m.Template{
+	Name:      "Example Template",
+	Subject:   "Account Activation",
+	HTML:      "<h1>You've signed up for *|SITE_NAME|*</h1>",
+	Text: "You've signed up for *|SITE_NAME|*",
+	FromEmail: "noreply@example.com",
+	FromName:  "Site Account System",
+	Labels: []string{"account", "account-activation"}
+}
+
+res, err := client.UpdateTemplate(template)
+if err != nil {
+	res, err = client.AddTemplate(template)
+}
+```
+
+### Subaccounts API
+
+https://mandrillapp.com/api/docs/subaccounts.JSON.html
+
+- AddSubaccount()
+- UpdateSubaccount()
+- DeleteSubaccount()
+- SubaccountInfo()
+
+```go
+subaccount := &m.Subaccount{
+	Id:           "cust-123",
+	Name:         "ABC Widgets, Inc.",
+	Notes:        "Free plan user, signed up on 2013-01-01 12:00:00",
+	Quota:        42,
+}
+
+res, err := client.UpdateSubaccount(subaccount)
+if err != nil {
+	res, err = client.AddSubaccount(subaccount)
+}
 ```
 
 ### Including Merge Tags
