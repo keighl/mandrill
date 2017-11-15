@@ -136,6 +136,48 @@ type Message struct {
 	SendAt string `json:"-"`
 }
 
+// MessageInfo represents payload sent to the API
+type MessageInfo struct {
+	// the message's unique id
+	Id string `json:"_id"`
+}
+
+// ResponseMsgInfo holds details of the message info
+type ResponseMsgInfo struct {
+	Ts          int      `json:"ts"`
+	ID          string   `json:"_id"`
+	Sender      string   `json:"sender"`
+	Template    string   `json:"template"`
+	Subject     string   `json:"subject"`
+	Email       string   `json:"email"`
+	Tags        []string `json:"tags"`
+	Opens       int      `json:"opens"`
+	OpensDetail []struct {
+		Ts       int    `json:"ts"`
+		IP       string `json:"ip"`
+		Location string `json:"location"`
+		Ua       string `json:"ua"`
+	} `json:"opens_detail"`
+	Clicks       int `json:"clicks"`
+	ClicksDetail []struct {
+		Ts       int    `json:"ts"`
+		URL      string `json:"url"`
+		IP       string `json:"ip"`
+		Location string `json:"location"`
+		Ua       string `json:"ua"`
+	} `json:"clicks_detail"`
+	State    string `json:"state"`
+	Metadata struct {
+		UserID  string `json:"user_id"`
+		Website string `json:"website"`
+	} `json:"metadata"`
+	SMTPEvents []struct {
+		Ts   int    `json:"ts"`
+		Type string `json:"type"`
+		Diag string `json:"diag"`
+	} `json:"smtp_events"`
+}
+
 // To is a single recipient's information.
 type To struct {
 	// the email address of the recipient
@@ -256,6 +298,37 @@ func (c *Client) MessagesSend(message *Message) (responses []*Response, err erro
 	data.SendAt = message.SendAt
 
 	return c.sendMessagePayload(data, "messages/send.json")
+}
+
+// MessageInfo sends a message via an API client
+func (c *Client) MessageInfo(info *MessageInfo) (responses *ResponseMsgInfo, err error) {
+	if c.Key == "SANDBOX_SUCCESS" {
+		return responses, nil
+	}
+
+	if c.Key == "SANDBOX_ERROR" {
+		return nil, errors.New("SANDBOX_ERROR")
+	}
+
+	if info.Id == "" {
+		return nil, errors.New("email ID empty")
+	}
+
+	var data struct {
+		Key string `json:"key"`
+		Id  string `json:"id"`
+	}
+
+	data.Key = c.Key
+	data.Id = info.Id
+
+	body, err := c.sendApiRequest(data, "messages/info.json")
+	if err != nil {
+		return responses, err
+	}
+	responses = new(ResponseMsgInfo)
+	err = json.Unmarshal(body, &responses)
+	return responses, err
 }
 
 // MessagesSendTemplate sends a message using a Mandrill template
