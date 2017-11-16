@@ -251,13 +251,15 @@ func (err Error) Error() string {
 	return err.Message
 }
 
+const BaseURL = "https://mandrillapp.com/api/1.0/"
+
 // ClientWithKey returns a mandrill.Client pointer armed with the supplied Mandrill API key
 // For integration testing, you can supply `SANDBOX_SUCCESS` or `SANDBOX_ERROR` as the API key.
 func ClientWithKey(key string) *Client {
 	return &Client{
 		Key:        key,
 		HTTPClient: &http.Client{},
-		BaseURL:    "https://mandrillapp.com/api/1.0/",
+		BaseURL:    BaseURL,
 	}
 }
 
