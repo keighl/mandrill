@@ -6,7 +6,7 @@ Stripped down package for sending emails through the Mandrill API. Inspired by [
 
 ### Installation
 
-    go get -u github.com/keighl/mandrill
+    go get -u github.com/maytechnet/mandrill
 
 ### Upgrading to 1.0
 
@@ -22,7 +22,7 @@ res, apiError, err := client.MessagesSend(m)
 
 ### Documentation
 
-http://godoc.org/github.com/keighl/mandrill
+https://godoc.org/github.com/maytechnet/mandrill
 
 ### Regular Message
 
