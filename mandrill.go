@@ -81,9 +81,9 @@ type Message struct {
 	// whether or not this message is important, and should be delivered ahead of non-important messages
 	Important bool `json:"important,omitempty"`
 	// whether or not to turn on open tracking for the message
-	TrackOpens bool `json:"track_opens,omitempty"`
+	TrackOpens *bool `json:"track_opens,omitempty"`
 	// whether or not to turn on click tracking for the message
-	TrackClicks bool `json:"track_clicks,omitempty"`
+	TrackClicks *bool `json:"track_clicks,omitempty"`
 	// whether or not to automatically generate a text part for messages that are not given text
 	AutoText bool `json:"auto_text,omitempty"`
 	// whether or not to automatically generate an HTML part for messages that are not given HTML
