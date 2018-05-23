@@ -320,7 +320,10 @@ func (c *Client) sendApiRequest(data interface{}, path string) (body []byte, err
 
 	if resp.StatusCode >= 400 {
 		resError := &Error{}
-		err = json.Unmarshal(body, resError)
+		if err = json.Unmarshal(body, resError); err != nil {
+			return body, err
+		}
+
 		return body, resError
 	}
 
