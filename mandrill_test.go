@@ -1,6 +1,7 @@
 package mandrill
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -79,6 +80,18 @@ func Test_MessagesSendTemplate_Fail(t *testing.T) {
 		Name:    "Unknown_Subaccount",
 		Message: "No subaccount exists with the id 'customer-123'",
 	}
+	expect(t, reflect.DeepEqual(correctResponse, err), true)
+}
+
+func Test_MessagesSendTemplate_Fail_Invalid_JSON(t *testing.T) {
+	server, m := testTools(400, ``)
+	defer server.Close()
+	responses, err := m.MessagesSendTemplate(&Message{}, "cheese", map[string]string{"name": "bob"})
+
+	expect(t, len(responses), 0)
+
+	correctResponse := json.Unmarshal([]byte(` `), struct{}{})
+
 	expect(t, reflect.DeepEqual(correctResponse, err), true)
 }
 
