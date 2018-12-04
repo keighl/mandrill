@@ -48,6 +48,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -305,6 +306,7 @@ func (c *Client) sendMessagePayload(data interface{}, path string) (responses []
 }
 
 func (c *Client) sendApiRequest(data interface{}, path string) (body []byte, err error) {
+	var emptyErr Error
 	payload, _ := json.Marshal(data)
 
 	resp, err := c.HTTPClient.Post(c.BaseURL+path, "application/json", bytes.NewReader(payload))
@@ -320,7 +322,15 @@ func (c *Client) sendApiRequest(data interface{}, path string) (body []byte, err
 
 	if resp.StatusCode >= 400 {
 		resError := &Error{}
-		err = json.Unmarshal(body, resError)
+		if err := json.Unmarshal(body, resError); err != nil {
+			return body, err
+		}
+
+		// if we don't receive a meaningful message from Mandrill, let's return the http status
+		if *resError == emptyErr {
+			return body, fmt.Errorf("received unexpected http response from mandrill API: %s", resp.Status)
+		}
+
 		return body, resError
 	}
 
