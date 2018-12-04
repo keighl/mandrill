@@ -48,6 +48,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -81,9 +82,9 @@ type Message struct {
 	// whether or not this message is important, and should be delivered ahead of non-important messages
 	Important bool `json:"important,omitempty"`
 	// whether or not to turn on open tracking for the message
-	TrackOpens bool `json:"track_opens,omitempty"`
+	TrackOpens *bool `json:"track_opens,omitempty"`
 	// whether or not to turn on click tracking for the message
-	TrackClicks bool `json:"track_clicks,omitempty"`
+	TrackClicks *bool `json:"track_clicks,omitempty"`
 	// whether or not to automatically generate a text part for messages that are not given text
 	AutoText bool `json:"auto_text,omitempty"`
 	// whether or not to automatically generate an HTML part for messages that are not given HTML
@@ -305,6 +306,7 @@ func (c *Client) sendMessagePayload(data interface{}, path string) (responses []
 }
 
 func (c *Client) sendApiRequest(data interface{}, path string) (body []byte, err error) {
+	var emptyErr Error
 	payload, _ := json.Marshal(data)
 
 	resp, err := c.HTTPClient.Post(c.BaseURL+path, "application/json", bytes.NewReader(payload))
@@ -320,7 +322,15 @@ func (c *Client) sendApiRequest(data interface{}, path string) (body []byte, err
 
 	if resp.StatusCode >= 400 {
 		resError := &Error{}
-		err = json.Unmarshal(body, resError)
+		if err := json.Unmarshal(body, resError); err != nil {
+			return body, err
+		}
+
+		// if we don't receive a meaningful message from Mandrill, let's return the http status
+		if *resError == emptyErr {
+			return body, fmt.Errorf("received unexpected http response from mandrill API: %s", resp.Status)
+		}
+
 		return body, resError
 	}
 
