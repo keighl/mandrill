@@ -48,6 +48,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -321,6 +322,9 @@ func (c *Client) sendApiRequest(data interface{}, path string) (body []byte, err
 	if resp.StatusCode >= 400 {
 		resError := &Error{}
 		err = json.Unmarshal(body, resError)
+		if err != nil {
+			return nil, fmt.Errorf("HTTP %v: %v", resp.StatusCode, string(body))
+		}
 		return body, resError
 	}
 
