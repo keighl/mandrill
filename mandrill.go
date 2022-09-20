@@ -367,14 +367,14 @@ func (m *Message) AddRecipient(email string, name string, sendType string) {
 func ConvertMapToVariables(i interface{}) []*Variable {
 	imap := map[string]interface{}{}
 
-	switch i.(type) {
+	switch i := i.(type) {
 	// Handle older API for passing just map[string]string
 	case map[string]string:
-		for k, v := range i.(map[string]string) {
+		for k, v := range i {
 			imap[k] = v
 		}
 	case map[string]interface{}:
-		imap, _ = i.(map[string]interface{})
+		imap = i
 	default:
 		return []*Variable{}
 	}
