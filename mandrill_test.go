@@ -1,6 +1,7 @@
 package mandrill
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -52,7 +53,11 @@ func Test_ClientWithKey(t *testing.T) {
 func Test_MessagesSendTemplate_Success(t *testing.T) {
 	server, m := testTools(200, `[{"email":"bob@example.com","status":"sent","reject_reason":"hard-bounce","_id":"1"}]`)
 	defer server.Close()
-	responses, err := m.MessagesSendTemplate(&Message{}, "cheese", map[string]string{"name": "bob"})
+	responses, err := m.MessagesSendTemplate(
+		context.Background(),
+		&Message{},
+		"cheese",
+		map[string]string{"name": "bob"})
 
 	expect(t, len(responses), 1)
 	expect(t, err, nil)
@@ -69,7 +74,9 @@ func Test_MessagesSendTemplate_Success(t *testing.T) {
 func Test_MessagesSendTemplate_Fail(t *testing.T) {
 	server, m := testTools(400, `{"status":"error","code":12,"name":"Unknown_Subaccount","message":"No subaccount exists with the id 'customer-123'"}`)
 	defer server.Close()
-	responses, err := m.MessagesSendTemplate(&Message{}, "cheese", map[string]string{"name": "bob"})
+	responses, err := m.MessagesSendTemplate(
+		context.Background(),
+		&Message{}, "cheese", map[string]string{"name": "bob"})
 
 	expect(t, len(responses), 0)
 
@@ -87,7 +94,7 @@ func Test_MessagesSendTemplate_Fail(t *testing.T) {
 func Test_MessageSend_Success(t *testing.T) {
 	server, m := testTools(200, `[{"email":"bob@example.com","status":"sent","reject_reason":"hard-bounce","_id":"1"}]`)
 	defer server.Close()
-	responses, err := m.MessagesSend(&Message{})
+	responses, err := m.MessagesSend(context.Background(), &Message{})
 
 	expect(t, len(responses), 1)
 	expect(t, err, nil)
@@ -104,7 +111,7 @@ func Test_MessageSend_Success(t *testing.T) {
 func Test_MessageSend_Fail(t *testing.T) {
 	server, m := testTools(400, `{"status":"error","code":12,"name":"Unknown_Subaccount","message":"No subaccount exists with the id 'customer-123'"}`)
 	defer server.Close()
-	responses, err := m.MessagesSend(&Message{})
+	responses, err := m.MessagesSend(context.Background(), &Message{})
 
 	expect(t, len(responses), 0)
 
@@ -122,7 +129,7 @@ func Test_MessageSend_Fail(t *testing.T) {
 func Test_Ping_Success(t *testing.T) {
 	server, m := testTools(200, `"PONG!"`)
 	defer server.Close()
-	response, err := m.Ping()
+	response, err := m.Ping(context.Background())
 
 	expect(t, response, "PONG!")
 	expect(t, err, nil)
@@ -131,7 +138,7 @@ func Test_Ping_Success(t *testing.T) {
 func Test_Ping_Fail(t *testing.T) {
 	server, m := testTools(400, `{"status":"error","code":-1,"name":"Invalid_Key","message":"Invalid API key"}`)
 	defer server.Close()
-	response, err := m.Ping()
+	response, err := m.Ping(context.Background())
 
 	expect(t, response, "")
 
@@ -148,13 +155,13 @@ func Test_Ping_Fail(t *testing.T) {
 
 func Test_SANDBOX_SUCCESS(t *testing.T) {
 	client := ClientWithKey("SANDBOX_SUCCESS")
-	_, err := client.MessagesSend(&Message{})
+	_, err := client.MessagesSend(context.Background(), &Message{})
 	expect(t, err, nil)
 }
 
 func Test_SANDBOX_ERROR(t *testing.T) {
 	client := ClientWithKey("SANDBOX_ERROR")
-	_, err := client.MessagesSend(&Message{})
+	_, err := client.MessagesSend(context.Background(), &Message{})
 	refute(t, err, nil)
 }
 
