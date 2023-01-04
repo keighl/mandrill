@@ -46,8 +46,10 @@ package mandrill
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -219,14 +221,14 @@ func ClientWithKey(key string) *Client {
 	}
 }
 
-func (c *Client) Ping() (pong string, err error) {
+func (c *Client) Ping(ctx context.Context) (pong string, err error) {
 	var data struct {
 		Key string `json:"key"`
 	}
 
 	data.Key = c.Key
 
-	body, err := c.sendApiRequest(data, "users/ping.json")
+	body, err := c.sendApiRequest(ctx, data, "users/ping.json")
 	if err != nil {
 		return pong, err
 	}
@@ -236,7 +238,9 @@ func (c *Client) Ping() (pong string, err error) {
 }
 
 // MessagesSend sends a message via an API client
-func (c *Client) MessagesSend(message *Message) (responses []*Response, err error) {
+func (c *Client) MessagesSend(
+	ctx context.Context,
+	message *Message) (responses []*Response, err error) {
 
 	var data struct {
 		Key     string   `json:"key"`
@@ -255,11 +259,15 @@ func (c *Client) MessagesSend(message *Message) (responses []*Response, err erro
 	data.IPPool = message.IPPool
 	data.SendAt = message.SendAt
 
-	return c.sendMessagePayload(data, "messages/send.json")
+	return c.sendMessagePayload(ctx, data, "messages/send.json")
 }
 
 // MessagesSendTemplate sends a message using a Mandrill template
-func (c *Client) MessagesSendTemplate(message *Message, templateName string, contents interface{}) (responses []*Response, err error) {
+func (c *Client) MessagesSendTemplate(
+	ctx context.Context,
+	message *Message,
+	templateName string,
+	contents interface{}) (responses []*Response, err error) {
 
 	var data struct {
 		Key             string      `json:"key"`
@@ -282,10 +290,13 @@ func (c *Client) MessagesSendTemplate(message *Message, templateName string, con
 	data.IPPool = message.IPPool
 	data.SendAt = message.SendAt
 
-	return c.sendMessagePayload(data, "messages/send-template.json")
+	return c.sendMessagePayload(ctx, data, "messages/send-template.json")
 }
 
-func (c *Client) sendMessagePayload(data interface{}, path string) (responses []*Response, err error) {
+func (c *Client) sendMessagePayload(
+	ctx context.Context,
+	data interface{},
+	path string) (responses []*Response, err error) {
 
 	if c.Key == "SANDBOX_SUCCESS" {
 		return []*Response{}, nil
@@ -295,7 +306,7 @@ func (c *Client) sendMessagePayload(data interface{}, path string) (responses []
 		return nil, errors.New("SANDBOX_ERROR")
 	}
 
-	body, err := c.sendApiRequest(data, path)
+	body, err := c.sendApiRequest(ctx, data, path)
 	if err != nil {
 		return responses, err
 	}
@@ -304,27 +315,44 @@ func (c *Client) sendMessagePayload(data interface{}, path string) (responses []
 	return responses, err
 }
 
-func (c *Client) sendApiRequest(data interface{}, path string) (body []byte, err error) {
-	payload, _ := json.Marshal(data)
-
-	resp, err := c.HTTPClient.Post(c.BaseURL+path, "application/json", bytes.NewReader(payload))
+func (c *Client) sendApiRequest(
+	ctx context.Context,
+	data interface{},
+	path string) (body []byte, err error) {
+	payload, err := json.Marshal(data)
 	if err != nil {
-		return body, err
+		return nil, fmt.Errorf("while marshalling JSON: %s", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", c.BaseURL+path, bytes.NewBuffer(payload))
+	if err != nil {
+		return nil, fmt.Errorf("while creating request: %s", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("while sending request: %s", err)
 	}
 
 	defer resp.Body.Close()
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return body, err
+		return nil, fmt.Errorf("while reading response: %s", err)
 	}
 
 	if resp.StatusCode >= 400 {
-		resError := &Error{}
+		resError := &Error{
+			Status: resp.Status,
+			Code:   resp.StatusCode,
+		}
 		err = json.Unmarshal(body, resError)
-		return body, resError
+		if err != nil {
+			return nil, fmt.Errorf("HTTP %v: %v", resp.StatusCode, string(body))
+		}
+		return nil, resError
 	}
 
-	return body, err
+	return body, nil
 }
 
 // AddRecipient appends a recipient to the message
@@ -339,14 +367,14 @@ func (m *Message) AddRecipient(email string, name string, sendType string) {
 func ConvertMapToVariables(i interface{}) []*Variable {
 	imap := map[string]interface{}{}
 
-	switch i.(type) {
+	switch i := i.(type) {
 	// Handle older API for passing just map[string]string
 	case map[string]string:
-		for k, v := range i.(map[string]string) {
+		for k, v := range i {
 			imap[k] = v
 		}
 	case map[string]interface{}:
-		imap, _ = i.(map[string]interface{})
+		imap = i
 	default:
 		return []*Variable{}
 	}
