@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -80,6 +81,15 @@ func Test_MessagesSendTemplate_Fail(t *testing.T) {
 		Message: "No subaccount exists with the id 'customer-123'",
 	}
 	expect(t, reflect.DeepEqual(correctResponse, err), true)
+}
+
+func Test_MessagesSendTemplate_Unexpected(t *testing.T) {
+	server, m := testTools(415, `{}`)
+	defer server.Close()
+	responses, err := m.MessagesSendTemplate(&Message{}, "cheese", map[string]string{"name": "bob"})
+
+	expect(t, len(responses), 0)
+	expect(t, strings.Contains(err.Error(), "415"), true)
 }
 
 // MessagesSend //////////
